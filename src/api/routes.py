@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, User
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
 
 api = Blueprint('api', __name__)
 
@@ -42,4 +42,39 @@ def handle_login():
         return jsonify(response_body), 401
     
 
+@api.route('/signup', methods=['POST'])
+def handle_signup():
+    response_body = {}
+    data = request.json
 
+    if not data or not data.get('email') or not data.get('password'):
+        response_body['message'] = 'Email y contraseña son requeridos'
+        return jsonify(response_body), 400
+
+    existing_user = User.query.filter_by(email=data['email']).first()
+    if existing_user:
+        response_body['message'] = 'El usuario ya existe'
+        return jsonify(response_body), 400
+
+    new_user = User(email=data['email'], password=data['password'], is_active=True)
+    db.session.add(new_user)
+    db.session.commit()
+
+    response_body['message'] = 'Usuario creado exitosamente'
+    return jsonify(response_body), 201
+
+@api.route('/private', methods=['GET'])
+@jwt_required()
+def handle_private():
+    current_user = get_jwt_identity()
+    response_body = {
+        "message": "Acceso concedido a área privada",
+        "user": current_user
+    }
+    return jsonify(response_body), 200
+
+@api.route('/logout', methods=['POST'])
+@jwt_required()
+def handle_logout():
+    response_body = {"message": "Sesión cerrada"}
+    return jsonify(response_body), 200

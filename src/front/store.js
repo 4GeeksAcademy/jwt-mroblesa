@@ -1,38 +1,47 @@
-export const initialStore=()=>{
-  return{
-    message: null,
-    todos: [
-      {
-        id: 1,
-        title: "Make the bed",
-        background: null,
-      },
-      {
-        id: 2,
-        title: "Do my homework",
-        background: null,
-      }
-    ]
-  }
+import React, { useState, useEffect, createContext } from 'react';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './routes';
+
+
+export const AuthContext = createContext();
+
+function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const API_URL = "https://cautious-doodle-5grr5q9q667q3pg9x-3001.app.github.dev";
+
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if(token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+
+  const login = (token) => {
+    localStorage.setItem('token', token);
+    setIsLoggedIn(true);
+  };
+
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+  };
+
+ 
+  const authContextValue = {
+    isLoggedIn,
+    login,
+    logout,
+    API_URL
+  };
+
+  return (
+    <AuthContext.Provider value={authContextValue}>
+      <RouterProvider router={router} />
+    </AuthContext.Provider>
+  );
 }
 
-export default function storeReducer(store, action = {}) {
-  switch(action.type){
-    case 'set_hello':
-      return {
-        ...store,
-        message: action.payload
-      };
-      
-    case 'add_task':
-
-      const { id,  color } = action.payload
-
-      return {
-        ...store,
-        todos: store.todos.map((todo) => (todo.id === id ? { ...todo, background: color } : todo))
-      };
-    default:
-      throw Error('Unknown action.');
-  }    
-}
+export default App;

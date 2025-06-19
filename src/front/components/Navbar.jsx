@@ -1,19 +1,43 @@
-import { Link } from "react-router-dom";
+import React, { useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../App';
 
-export const Navbar = () => {
+const Navbar = () => {
+  const navigate = useNavigate();
+  const { isLoggedIn, logout } = useContext(AuthContext);
 
-	return (
-		<nav className="navbar navbar-light bg-light">
-			<div className="container">
-				<Link to="/">
-					<span className="navbar-brand mb-0 h1">React Boilerplate</span>
-				</Link>
-				<div className="ml-auto">
-					<Link to="/demo">
-						<button className="btn btn-primary">Check the Context in action</button>
-					</Link>
-				</div>
-			</div>
-		</nav>
-	);
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  return (
+    <nav className="navbar navbar-expand-lg navbar-light bg-light">
+      <div className="container-fluid">
+        <Link className="navbar-brand" to="/">Mi App</Link>
+        
+        <div className="d-flex">
+          {isLoggedIn ? (
+            <button 
+              className="btn btn-outline-danger" 
+              onClick={handleLogout}
+            >
+              Cerrar Sesión
+            </button>
+          ) : (
+            <>
+              <Link className="btn btn-outline-primary me-2" to="/login">
+                Iniciar Sesión
+              </Link>
+              <Link className="btn btn-primary" to="/signup">
+                Registrarse
+              </Link>
+            </>
+          )}
+        </div>
+      </div>
+    </nav>
+  );
 };
+
+export default Navbar;
